@@ -46,14 +46,7 @@ class PlayerClass {
         static const int MAX_TYPES = 5;
         static const int MAX_STATS = 14;
         static const int DEFAULT_POS = -1;
-        static const int MAX_2D6 = 11;
-        static const int MAX_PWR = 11;
-        static const int MAX_WILL = 11;
-        static const int w = -1;
-        static const int k = 0;
         static const int STATS[MAX_STATS][MAX_TYPES];
-        static const int IMPACT[MAX_2D6][MAX_PWR];  
-        static const int CRITICAL_WOUND[MAX_2D6][MAX_WILL];
 
     public:
         /*
@@ -256,10 +249,6 @@ class PlayerClass {
         */
         bool Heal();
         
-        int WillDamage(int willDmg);
-
-        int AddWill(int addWill);
-
         /*
         Narrative: Detracts an amount from the player's current speed if they are active
         Pre-condition: None
@@ -310,13 +299,6 @@ class PlayerClass {
         */
         bool SetDir(DirType newDir);
         
-        int UpdateDefense(int amount);
-
-        int HitScore();
-
-        int Impact();
-
-        bool CriticalWound();
         /*
         Weapon* DropWeapon();
 

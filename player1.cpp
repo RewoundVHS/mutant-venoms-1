@@ -23,37 +23,6 @@ const int PlayerClass::STATS[MAX_STATS][MAX_TYPES] = {
     { 0,  0,  0,  0,  0},    // Active
     { 0,  0,  0,  0,  0}};   // Direction
 
-const int PlayerClass::IMPACT[MAX_2D6][MAX_PWR] = {   
-//                  Power Rating
-//    12  11  10   9   8   7   6   5   4   3   2    Die Roll
-    {  w,  w,  w,  w,  w,  w,  w,  w,  w,  w, 10},  // 12
-    {  w,  w,  w,  w,  w,  w,  w,  w,  w, 10,  9},  // 11
-    {  w,  w,  w,  w,  w,  w,  w,  w, 10,  9,  8},  // 10
-    {  w,  w,  w,  w,  w,  w,  w, 10,  9,  8,  7},  // 9
-    {  w,  w,  w,  w,  w,  w, 10,  9,  8,  7,  6},  // 8
-    {  w,  w,  w,  w,  w, 10,  9,  8,  7,  6,  5},  // 7
-    {  w,  w,  w,  w, 10,  9,  8,  7,  6,  5,  4},  // 6
-    {  w,  w,  w, 10,  9,  8,  7,  6,  5,  4,  3},  // 5
-    {  w,  w, 10,  9,  8,  7,  6,  5,  4,  3,  2},  // 4
-    {  w, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1},  // 3
-    { 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0}}; // 2
-
-const int PlayerClass::CRITICAL_WOUND[MAX_2D6][MAX_WILL] = {
-//                  Willpower Rating           
-//    2   3   4   5   6   7   8   9  10  11  12    Die Roll
-    {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},  // 2
-    { k, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},  // 3
-    { k,  k, -1, -1, -1, -1, -1, -1, -1, -1, -1},  // 4
-    { k,  k,  k, -1, -1, -1, -1, -1, -1, -1, -1},  // 5
-    { k,  k,  k,  k, -1, -1, -1, -1, -1, -1, -1},  // 6
-    { k,  k,  k,  k,  k, -1, -1, -1, -1, -1, -1},  // 7 
-    { k,  k,  k,  k,  k,  k, -1, -1, -1, -1, -1},  // 8  
-    { k,  k,  k,  k,  k,  k,  k, -1, -1, -1, -1},  // 9  
-    { k,  k,  k,  k,  k,  k,  k,  k, -1, -1, -1},  // 10 
-    { k,  k,  k,  k,  k,  k,  k,  k,  k, -1, -1},  // 11
-    { k,  k,  k,  k,  k,  k,  k,  k,  k,  k, -1}}; // 12
-
-// Collapse all constructors into one
 PlayerClass::PlayerClass(string initName, PlayerType initType) {
     if (initName.size() <= 0)
         name = DEFAULT_NAME;
@@ -259,7 +228,6 @@ bool PlayerClass::Heal() {
     return healed;
 }
 
-// This is a yet another test
 int PlayerClass::WillDamage(int willDmg) {
     if (IsActive() && (willDmg >= 0))
         playerStats[WILLPOWER] -= willDmg;
@@ -268,7 +236,6 @@ int PlayerClass::WillDamage(int willDmg) {
         MakeDead();
 }
 
-// Does willpower have a maximum?
 int PlayerClass::AddWill(int addWill) {
     if (IsActive() && (addWill >= 0))
         playerStats[WILLPOWER] += addWill;
@@ -330,7 +297,6 @@ bool PlayerClass::SetDir(DirType newDir) {
     return set;
 }
 
-// Needs modified to include weapon data
 void PlayerClass::Write(ostream& out) const {
     out << TypeStr() << '#';
     if (IsActive())
@@ -343,80 +309,8 @@ void PlayerClass::Write(ostream& out) const {
     << 'D' << playerStats[ROLL_FACES] << '#' << Defense() << '#' << endl;
 }
 
-// Might need modified along with Write
 ostream& operator<<(ostream& out, const PlayerClass *p) {
     if (p != NULL)
         p->Write(out);
     return out;
 }
-
-int PlayerClass::UpdateDefense(int amount) {
-    if (IsActive())
-        playerStats[DEFENSE] += amount;
-    if(playerStats[DEFENSE] < 0);
-        playerStats[DEFENSE] = 0;
-
-    return playerStats[DEFENSE];
-}
-
-int PlayerClass::HitScore() {
-    return Dice::Roll(name, GameSpace::HITSCORE, 2, 6); 
-}
-
-int PlayerClass::Impact() {
-
-}
-
-bool PlayerClass::CriticalWound() {
-    int damage =10;
-    int willDmg = 1;
-    int roll;
-    int slowed = playerStats[CUR_SPEED] - playerStats[CUR_SPEED]/2 ;
-    int crit;
-
-    if(IsActive()) {
-        Wounded(damage);
-        SlowDown(slowed);
-        if (IsAlive()) {
-            // Is it appropriate to have the floating 2 and 6 here?
-            roll = Dice::Roll(name, GameSpace::WOUND, 2, 6);
-            crit = CRITICAL_WOUND[roll][playerStats[WILLPOWER]];
-
-            if (crit = -1)
-                WillDamage(willDmg);
-            else
-                MakeDead();
-        }
-    }
-    return IsAlive();
-}
-/*
-Weapon* PlayerClass::DropWeapon() {
-    Weapon* dropped;
-
-    if (IsActive() && HasWeapon()) {
-        dropped = *playerWeapon;
-        playerWeapon = NULL;
-    } else {
-        dropped = NULL;
-    }
-    return dropped;
-}
-
-bool PlayerClass::HasWeapon() {
-    return(playerWeapon != NULL);
-}
-
-Weapon* PlayerClass::GrabWeapon(Weapon* weapon) {
-    Weapon* oldWeapon = playerWeapon;
-
-    if (IsActive() && IsHuman())
-        playerWeapon = weapon;
-    // If player has skill with weapon, skill is used
-    // Otherwise weapon skill is set to 1
-}
-
-bool PlayerClass::ImprovedSkill(int improvement) {    
-
-}
-*/
